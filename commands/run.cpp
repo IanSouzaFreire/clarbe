@@ -1,6 +1,6 @@
 #include <cstdlib>
 #include <filesystem>
-#include <print>
+#include <iostream>
 
 #include "cmd_template.hpp"
 #include "toml.hpp"
@@ -9,7 +9,7 @@ namespace fs = std::filesystem;
 
 MAIN_FUNC(const args_t& args) {
   if (!fs::is_directory("target/bin")) {
-    std::println("Project not built.\n");
+    std::cout << "Project not built.\n";
     return 0;
   }
 

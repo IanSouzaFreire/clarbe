@@ -7,7 +7,6 @@ tests/build
 obj/
 third-party/
 target/
-build.sh
 
 # Includes
 tomlplusplus/

@@ -12,10 +12,10 @@ dlls_dir = ["commands"]
 [build]
 run_before = ["git clone https://github.com/marzer/tomlplusplus.git",
               "git -C tomlplusplus pull https://github.com/marzer/tomlplusplus.git"]
-run_after = ["bash format.sh", "cp -a \"target/bin\" \"%CLARBE_HOME%/bin/\""]
+run_after = ["cp -a \"target/bin\" \"%CLARBE_HOME%/\""]
 libs = ["stdc++exp"]
 debug_info = true
-compiler = "clang++"
+compiler = "g++"
 
 [uses]
 macro_file = false

@@ -1,6 +1,6 @@
 #include <filesystem>
 #include <fstream>
-#include <print>
+#include <iostream>
 
 #include "cmd_template.hpp"
 
@@ -10,7 +10,7 @@ void add_content_to_folder(const std::string& path);
 
 MAIN_FUNC(const args_t& args) {
   if (fs::is_directory(args[2])) {
-    std::println("Directory {} already exists.", args[2]);
+    std::cout << "Directory " << args[2] << " already exists.\n";
     return 0;
   }
 

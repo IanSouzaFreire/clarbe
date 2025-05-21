@@ -4,7 +4,7 @@
 #include <filesystem>
 #include <functional>
 #include <map>
-#include <print>
+#include <iostream>
 
 #include "cmd_template.hpp"
 
@@ -29,13 +29,14 @@ std::map<std::string, std::function<int(const args_t&)>> commands = {
                   "     | run\n"
                   "--------------------------------";
 
-std::println("{}", help_msg);
+std::cout << help_msg << '\n';
+
 return 0;
 }
 }
 , {"version", CMD_FUNC{const char version[] = "0.0.1";
 
-std::println("{}", version);
+std::cout << version << '\n';
 return 0;
 }
 }

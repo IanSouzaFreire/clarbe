@@ -1,6 +1,6 @@
 #include <filesystem>
 #include <fstream>
-#include <print>
+#include <iostream>
 
 #include "cmd_template.hpp"
 
@@ -11,7 +11,7 @@ void create_plugin_template(const std::string& path);
 
 MAIN_FUNC(const args_t& args) {
   if (!fs::is_empty(fs::current_path())) {
-    std::println("Current directory is not empty.");
+    std::cout << "Current directory is not empty.\n";
     return 0;
   }
 

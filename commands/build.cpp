@@ -2,7 +2,7 @@
 #include <filesystem>
 #include <functional>
 #include <map>
-#include <print>
+#include <iostream>
 #include <string>
 
 #include "cmd_template.hpp"
@@ -45,18 +45,18 @@ void handle_os_includes(std::string& incs, const std::string& path);
 
 MAIN_FUNC(const args_t& args) {
   if (args[1] == "help") {
-    std::println("Availible commands:");
+    std::cout << "Availible commands:\n";
 
     for (std::map<std::string, std::function<int(Flags_t&, const int,
                                                  const args_t&)>>::iterator
              iter = flag_op.begin();
          iter != flag_op.end(); ++iter) {
-      std::println("\t| {};", iter->first);
+      std::cout << "\t| " << iter->first << ";";
     }
   }
 
   if (!fs::exists("clarbe.toml")) {
-    std::println("Project file not detected.");
+    std::cout << "Project file not detected.\n";
     return 0;
   }
 
@@ -67,7 +67,7 @@ MAIN_FUNC(const args_t& args) {
     local_config = toml::parse_file("clarbe.toml");
     global_config = toml::parse_file(clarbe_env + "/config.toml");
   } catch (const toml::parse_error& err) {
-    std::println("Error parsing config file:\n{}\n", err.description());
+    std::cout << "Error parsing config file:\n" << err.description() << "\n";
     return 1;
   }
 
@@ -77,12 +77,13 @@ MAIN_FUNC(const args_t& args) {
   std::string includes = "";
   std::string pre = "";
   std::string std = "";
+  std::string main_out_objs = " ";
   Flags_t compilation_flags;
 
   if (local_config["package"]["name"]) {
     pkg_name = *(local_config["package"]["name"].value<std::string>());
   } else {
-    std::println("package name not defined.");
+    std::cout << "package name not defined.\n";
     return 1;
   }
 
@@ -91,7 +92,7 @@ MAIN_FUNC(const args_t& args) {
   } else if (global_config["build"]["compiler"]) {
     compiler = *(global_config["build"]["compiler"].value<std::string>());
   } else {
-    std::println("No compiler provided.");
+    std::cout << "No compiler provided.\n";
     return 1;
   }
 
@@ -144,7 +145,7 @@ MAIN_FUNC(const args_t& args) {
   const auto& source_directories = local_config["local"]["sources"].as_array();
 
   if (!source_directories) {
-    std::println("Source directories not defined properly.");
+    std::cout << "Source directories not defined properly.\n";
   }
 
   if (local_config["local"]["includes"]) {
@@ -183,7 +184,8 @@ MAIN_FUNC(const args_t& args) {
   }
 
   if (local_config["build"]["extra"]) {
-    const std::string extra_commands = local_config["build"]["extra"].as_string()->get();
+    const std::string extra_commands =
+        local_config["build"]["extra"].as_string()->get();
     used_flags += " " + extra_commands;
   }
 
@@ -198,9 +200,11 @@ MAIN_FUNC(const args_t& args) {
       std::system((compiler + " -c " + path + " -o target/object/" + filename +
                    ".o " + std + includes + used_flags)
                       .c_str());
+      main_out_objs += "target/object/" + filename + ".o ";
     }
   }
 
+  // Compile accompanying dll files
   if (local_config["local"]["dlls_dir"]) {
     fs::create_directories("target/dlls");
     const auto& dll_files_dir = *(local_config["local"]["dlls_dir"].as_array());
@@ -212,17 +216,18 @@ MAIN_FUNC(const args_t& args) {
         const std::string path = entry.path().string();
         const std::string filename = entry.path().stem().string();
         std::system((compiler + " -c " + path + " -o target/dlls/" + filename +
-                    ".dll.o " + std + includes + used_flags)
+                     ".dll.o " + std + includes + used_flags)
                         .c_str());
-        std::system((compiler + " -shared " + pre + " -o target/bin/" + filename + ".dll target/dlls/" + filename +
-                    ".dll.o " + std + includes + used_flags)
+        std::system((compiler + " -shared " + pre + " -o target/bin/" +
+                     filename + ".dll target/dlls/" + filename + ".dll.o " +
+                     std + includes + used_flags)
                         .c_str());
       }
     }
   }
 
   std::system((compiler + " " + pre + " -o target/bin/" + pkg_name +
-               " target/object/*.o " + std + " " + includes + used_flags)
+               main_out_objs + std + " " + includes + used_flags)
                   .c_str());
 
   return 0;
@@ -244,8 +249,7 @@ std::string return_flags(const Flags_t& flags) {
   } else if (flags.optimization == 3) {
     ret += " -O3 ";
   } else {
-    std::println("optimization level \'{}\' not found, using default...",
-                 flags.optimization);
+    std::cout << "optimization level \'" << flags.optimization << "\' not found, using default...\n";
   }
 
   if (flags.debug == true) {
