@@ -8,11 +8,12 @@ version = "0.0.1"
 sources = ["src"]
 includes = ["include", "tomlplusplus"]
 dlls_dir = ["commands"]
+os_includes = ["specific"]
 
 [build]
 run_before = ["git clone https://github.com/marzer/tomlplusplus.git",
               "git -C tomlplusplus pull https://github.com/marzer/tomlplusplus.git"]
-run_after = ["cp -a \"target/bin\" \"%CLARBE_HOME%/\""]
+# run_after = ["cp -a \"target/bin\" \"%CLARBE_HOME%/\""]
 libs = ["stdc++exp"]
 debug_info = true
 compiler = "g++"

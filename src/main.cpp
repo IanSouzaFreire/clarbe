@@ -3,19 +3,10 @@
 #include <string>
 #include <vector>
 
+#include "dll_handling.hpp"
 #include "commands.hpp"
 #include "consts.hpp"
 #include "toml.hpp"
-
-#if defined(__linux__)
-#include <dlfcn.h>
-#define LIB_SUFFIX ".so"
-#elif defined(_WIN32)
-#include <windows.h>
-#define LIB_SUFFIX ".dll"
-#else
-#error "not supported"
-#endif
 
 typedef int (*CMD_func)(const std::vector<std::string>&);
 
@@ -51,41 +42,13 @@ int main(int argc, char** argv) {
   // Load the command's library
   std::string lib_path = clarbe_env + "/bin/" + args[0] + LIB_SUFFIX;
 
-#if defined(__linux__)
-  void* dll_file = dlopen(lib_path.c_str(), RTLD_LAZY);
-  if (!dll_file) {
-    std::cout << "Could not find command '" << args[0] << "': " << dlerror() << "\n";
-    return 1;
-  }
-  CMD_func proc = (CMD_func)dlsym(dll_file, "proc");
-  if (!proc) {
-    std::cout << "Could not locate main function in command: " << dlerror() << "\n";
-    dlclose(dll_file);
-    return 1;
-  }
-#elif defined(_WIN32)
-  HMODULE dll_file = LoadLibrary(lib_path.c_str());
-  if (!dll_file) {
-    std::cout << "Could not find command '" << args[0] << "'.\n";
-    return 1;
-  }
-  CMD_func proc = (CMD_func)GetProcAddress(dll_file, "proc");
-  if (!proc) {
-    std::cout << "Could not locate main function in command.\n";
-    FreeLibrary(dll_file);
-    return 1;
-  }
-#endif
+  open_dll;
 
   run_toml_before_cmd();
   int ret = proc(args);
   run_toml_after_cmd();
 
-#if defined(__linux__)
-  dlclose(dll_file);
-#elif defined(_WIN32)
-  FreeLibrary(dll_file);
-#endif
+  close_dll;
 
   return ret;
 }
