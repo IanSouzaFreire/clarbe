@@ -21,6 +21,7 @@ hence the compiler is not yet functional, the project manager will be a wrapper 
 ## Installation
  - Create a environment variable 'CLARBE_HOME' and add 'CLARBE_HOME/bin' to path
  - Download the zipped executable, place the contents in 'CLARBE_HOME/bin'
+ > if you're compiling with ```build.sh``` please note that you need to define the included OS specific manually
  - now run in terminal ```clarbe version```
 
 ## Usage

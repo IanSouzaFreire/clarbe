@@ -12,7 +12,8 @@
 #error "not supported"
 #endif
 
-#define HELP_FUNC EXPORT_FN char* fhelp // add support for custom help messages later
+#define HELP_FUNC \
+  EXPORT_FN char* fhelp  // add support for custom help messages later
 #define MAIN_FUNC EXPORT_FN int proc
 typedef std::vector<std::string> args_t;
 

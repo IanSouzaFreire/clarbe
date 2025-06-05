@@ -3,8 +3,8 @@
 
 #include <filesystem>
 #include <functional>
-#include <map>
 #include <iostream>
+#include <map>
 
 #include "cmd_template.hpp"
 

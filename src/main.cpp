@@ -3,9 +3,9 @@
 #include <string>
 #include <vector>
 
-#include "dll_handling.hpp"
 #include "commands.hpp"
 #include "consts.hpp"
+#include "dll_handling.hpp"
 #include "toml.hpp"
 
 typedef int (*CMD_func)(const std::vector<std::string>&);
@@ -59,7 +59,7 @@ void run_toml_before_cmd() {
   try {
     local_config = toml::parse_file("clarbe.toml");
   } catch (const toml::parse_error& err) {
-    std::cout << "Error parsing config file:\n" << err.description() << '\n';
+    ;
   }
 
   if (local_config["build"]["run_before"]) {
@@ -77,7 +77,7 @@ void run_toml_after_cmd() {
   try {
     local_config = toml::parse_file("clarbe.toml");
   } catch (const toml::parse_error& err) {
-    std::cout << "Error parsing config file:\n" << err.description() << '\n';
+    ;
   }
 
   if (local_config["build"]["run_after"]) {

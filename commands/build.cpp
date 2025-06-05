@@ -1,8 +1,8 @@
 #include <cstdlib>
 #include <filesystem>
 #include <functional>
-#include <map>
 #include <iostream>
+#include <map>
 #include <string>
 
 #include "cmd_template.hpp"
@@ -17,6 +17,7 @@ class Flags_t {
   bool cmd_window = true;
   bool debug = false;
   int optimization = 0;
+  std::string architecture = "";
 };
 
 #define FLAG_OP_L \
@@ -31,9 +32,13 @@ return 0;
 return 0;
 }
 }
+, {"--debug", FLAG_OP_L{flags.debug = true;
+return 0;
+}
+}
 , {
-  "--debug", FLAG_OP_L {
-    flags.debug = true;
+  "--architecture", FLAG_OP_L {
+    flags.architecture = args[place + 1];
     return 0;
   }
 }
@@ -41,7 +46,7 @@ return 0;
 ;
 
 std::string return_flags(const Flags_t&);
-void handle_os_includes(std::string& incs, const std::string& path);
+void handle_os_includes(std::string&, const std::string&, const Flags_t&);
 
 MAIN_FUNC(const args_t& args) {
   if (args[1] == "help") {
@@ -71,6 +76,7 @@ MAIN_FUNC(const args_t& args) {
     return 1;
   }
 
+  std::string wasm_compiler = "";
   std::string compiler = "";
   std::string pkg_name = "";
   std::string used_flags = " ";
@@ -93,6 +99,17 @@ MAIN_FUNC(const args_t& args) {
     compiler = *(global_config["build"]["compiler"].value<std::string>());
   } else {
     std::cout << "No compiler provided.\n";
+    return 1;
+  }
+
+  if (local_config["build"]["wasm_compiler"]) {
+    wasm_compiler =
+        *(local_config["build"]["wasm_compiler"].value<std::string>());
+  } else if (global_config["build"]["wasm_compiler"]) {
+    wasm_compiler =
+        *(global_config["build"]["wasm_compiler"].value<std::string>());
+  } else if (local_config["local"]["wasms_dir"]) {
+    std::cout << "Wasm compilation defined but no compiler.\n";
     return 1;
   }
 
@@ -129,16 +146,11 @@ MAIN_FUNC(const args_t& args) {
   fs::create_directories("target/object");
   fs::create_directories("target/bin");
 
-  std::optional<bool> using_usr_macro =
-      local_config["uses"]["macro_file"].value<bool>();
-  std::optional<bool> using_usr_build =
-      local_config["uses"]["macro_file"].value<bool>();
-
-  if (using_usr_macro) {
+  if (local_config["uses"]["macro_file"]) {
     // use macros file
   }
 
-  if (using_usr_build) {
+  if (local_config["uses"]["build_file"]) {
     // use build file
   }
 
@@ -162,7 +174,7 @@ MAIN_FUNC(const args_t& args) {
         *(local_config["local"]["os_includes"].as_array());
 
     for (const auto& node : include_directories) {
-      handle_os_includes(includes, node.as_string()->get());
+      handle_os_includes(includes, node.as_string()->get(), compilation_flags);
     }
   }
 
@@ -180,6 +192,8 @@ MAIN_FUNC(const args_t& args) {
     } else if (build_type == "plugin" || build_type == "dll") {
       pre = "-shared";
       pkg_name += ".dll";
+    } else if (build_type == "wasm") {
+      pkg_name += ".wasm";
     }
   }
 
@@ -226,6 +240,29 @@ MAIN_FUNC(const args_t& args) {
     }
   }
 
+  // Compile accompanying wasm files
+  if (local_config["local"]["wasms_dir"]) {
+    fs::create_directories("target/wasm_obj");
+    const auto& dll_files_dir =
+        *(local_config["local"]["wasms_dir"].as_array());
+
+    for (const auto& node : dll_files_dir) {
+      const std::string dir = node.as_string()->get();
+
+      for (const auto& entry : fs::directory_iterator(dir)) {
+        const std::string path = entry.path().string();
+        const std::string filename = entry.path().stem().string();
+        std::system((wasm_compiler + path + " -o target/wasm_obj/" + filename +
+                     ".wasm.o " + std + includes + used_flags)
+                        .c_str());
+        std::system((wasm_compiler + " target/wasm_obj/" + filename +
+                     ".wasm.o " + " -o target/bin/" + filename + ".wasm " +
+                     std + includes + used_flags)
+                        .c_str());
+      }
+    }
+  }
+
   std::system((compiler + " " + pre + " -o target/bin/" + pkg_name +
                main_out_objs + std + " " + includes + used_flags)
                   .c_str());
@@ -249,7 +286,8 @@ std::string return_flags(const Flags_t& flags) {
   } else if (flags.optimization == 3) {
     ret += " -O3 ";
   } else {
-    std::cout << "optimization level \'" << flags.optimization << "\' not found, using default...\n";
+    std::cout << "optimization level \'" << flags.optimization
+              << "\' not found, using default...\n";
   }
 
   if (flags.debug == true) {
@@ -259,24 +297,32 @@ std::string return_flags(const Flags_t& flags) {
   return ret;
 }
 
-void handle_os_includes(std::string& incs, const std::string& path) {
+void handle_os_includes(std::string& incs, const std::string& path,
+                        const Flags_t& flags) {
+  // if architecture is given, it'll search "/OS{arch}"; if not, "/OS".
+  // the software will never work with wine using this approach
 #if defined(__linux__)
-  incs += "-I " + path + "/linux ";
+  incs += "-I " + path + "/linux" + flags.architecture + " ";
 #elif defined(_WIN32)
-  incs += "-I " + path + "/win32 ";
-#elif defined(_WIN64)
-  incs += "-I " + path + "/win64 ";
-/*
+  incs += "-I " + path + "/win" + flags.architecture + " ";
 #elif defined(__sun)
+  incs += "-I " + path + "/sun" + flags.architecture + " ";
 #elif defined(__FreeBSD__)
+  incs += "-I " + path + "/freebsd" + flags.architecture + " ";
 #elif defined(__NetBSD__)
+  incs += "-I " + path + "/netbsd" + flags.architecture + " ";
 #elif defined(__OpenBSD__)
+  incs += "-I " + path + "/openbsd" + flags.architecture + " ";
 #elif defined(__APPLE__)
+  incs += "-I " + path + "/apple" + flags.architecture + " ";
 #elif defined(__hpux)
+  incs += "-I " + path + "/hpux" + flags.architecture + " ";
 #elif defined(__osf__)
+  incs += "-I " + path + "/osf" + flags.architecture + " ";
 #elif defined(__sgi)
+  incs += "-I " + path + "/sgi" + flags.architecture + " ";
 #elif defined(_AIX)
-*/
+  incs += "-I " + path + "/AIX" + flags.architecture + " ";
 #else
 #error Platform not supported
 #endif

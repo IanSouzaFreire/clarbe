@@ -16,6 +16,7 @@ tomlplusplus/
 *.tmp.*
 valgrind-out.txt
 desktop.ini
+send.sh
 
 # Prerequisites
 *.d
