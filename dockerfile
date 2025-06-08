@@ -15,10 +15,10 @@ RUN dpkg --add-architecture i386 && \
 
 WORKDIR /app
 COPY . /app
-RUN chmod +x build.sh
+RUN chmod +x build.sh ../specific/linux
 
 # Run 64-bit build (default gcc target)
-RUN ./build.sh
+RUN ./build.sh ../specific/linux
 
 # 32-bit Debian build
 FROM debian:bookworm AS debian-x86
@@ -29,11 +29,11 @@ RUN dpkg --add-architecture i386 && \
 
 WORKDIR /app
 COPY . /app
-RUN chmod +x build.sh
+RUN chmod +x build.sh ../specific/linux
 
 # Set environment to build 32-bit binary via CFLAGS and cross compilation flags
 ENV CFLAGS="-m32" CXXFLAGS="-m32" LDFLAGS="-m32"
-RUN ./build.sh
+RUN ./build.sh ../specific/linux
 
 
 ########
@@ -48,8 +48,8 @@ RUN pacman -Sy --noconfirm base-devel bash clang git && \
 
 WORKDIR /app
 COPY . /app
-RUN chmod +x build.sh
-RUN ./build.sh
+RUN chmod +x build.sh ../specific/linux
+RUN ./build.sh ../specific/linux
 
 # Arch 32-bit build (cross compile with -m32)
 FROM archlinux:latest AS arch-x86
@@ -59,9 +59,9 @@ RUN pacman -Sy --noconfirm base-devel bash clang git && \
 
 WORKDIR /app
 COPY . /app
-RUN chmod +x build.sh
+RUN chmod +x build.sh ../specific/linux
 ENV CFLAGS="-m32" CXXFLAGS="-m32" LDFLAGS="-m32"
-RUN ./build.sh
+RUN ./build.sh ../specific/linux
 
 
 #############
@@ -79,8 +79,8 @@ RUN dnf install -y dnf-plugins-core && \
 
 WORKDIR /app
 COPY . /app
-RUN chmod +x build.sh
-RUN ./build.sh
+RUN chmod +x build.sh ../specific/linux
+RUN ./build.sh ../specific/linux
 
 # Red Hat 32-bit build (cross compile with -m32)
 FROM centos:8 AS rhel-x86
@@ -92,9 +92,9 @@ RUN dnf install -y dnf-plugins-core && \
 
 WORKDIR /app
 COPY . /app
-RUN chmod +x build.sh
+RUN chmod +x build.sh ../specific/linux
 ENV CFLAGS="-m32" CXXFLAGS="-m32" LDFLAGS="-m32"
-RUN ./build.sh
+RUN ./build.sh ../specific/linux
 
 
 ############
@@ -111,8 +111,8 @@ RUN emerge-webrsync && \
 
 WORKDIR /app
 COPY . /app
-RUN chmod +x build.sh
-RUN ./build.sh
+RUN chmod +x build.sh ../specific/linux
+RUN ./build.sh ../specific/linux
 
 # Gentoo 32-bit build (cross compile with -m32)
 FROM gentoo/portage:latest AS gentoo-x86
@@ -124,9 +124,9 @@ RUN emerge-webrsync && \
 
 WORKDIR /app
 COPY . /app
-RUN chmod +x build.sh
+RUN chmod +x build.sh ../specific/linux
 ENV CFLAGS="-m32" CXXFLAGS="-m32" LDFLAGS="-m32"
-RUN ./build.sh
+RUN ./build.sh ../specific/linux
 
 
 ############
@@ -140,8 +140,8 @@ RUN slackpkg update && slackpkg install gcc make bash clang git
 
 WORKDIR /app
 COPY . /app
-RUN chmod +x build.sh
-RUN ./build.sh
+RUN chmod +x build.sh ../specific/linux
+RUN ./build.sh ../specific/linux
 
 # Slackware 32-bit build (cross compile with -m32)
 FROM alien/slackware:current AS slackware-x86
@@ -150,9 +150,9 @@ RUN slackpkg update && slackpkg install gcc make bash clang git
 
 WORKDIR /app
 COPY . /app
-RUN chmod +x build.sh
+RUN chmod +x build.sh ../specific/linux
 ENV CFLAGS="-m32" CXXFLAGS="-m32" LDFLAGS="-m32"
-RUN ./build.sh
+RUN ./build.sh ../specific/linux
 
 
 ##########
@@ -166,8 +166,8 @@ RUN nix-env -iA nixos.gcc nixos.gnumake nixos.bash nixos.clang nixos.git
 
 WORKDIR /app
 COPY . /app
-RUN chmod +x build.sh
-RUN ./build.sh
+RUN chmod +x build.sh ../specific/linux
+RUN ./build.sh ../specific/linux
 
 # NixOS 32-bit build (cross compile with -m32) - may require nix config, assuming gcc supports it here
 FROM nixos/nix AS nixos-x86
@@ -176,9 +176,9 @@ RUN nix-env -iA nixos.gcc nixos.gnumake nixos.bash nixos.clang nixos.git
 
 WORKDIR /app
 COPY . /app
-RUN chmod +x build.sh
+RUN chmod +x build.sh ../specific/linux
 ENV CFLAGS="-m32" CXXFLAGS="-m32" LDFLAGS="-m32"
-RUN ./build.sh
+RUN ./build.sh ../specific/linux
 
 
 
@@ -202,7 +202,7 @@ RUN Invoke-WebRequest -Uri https://github.com/git-for-windows/git/releases/lates
 WORKDIR C:\\app
 COPY . C:\\app
 # Switch to bash to run build.sh
-RUN C:\\Program\ Files\\Git\\bin\\bash.exe -c "./build.sh"
+RUN C:\\Program\ Files\\Git\\bin\\bash.exe -c "./build.sh" ../specific/win
 
 # Windows 32-bit build is not common in Docker containers and not officially supported as container base.
 

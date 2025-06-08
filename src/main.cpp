@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
   }
 
   // Load the command's library
-  std::string lib_path = clarbe_env + "/bin/" + args[0] + LIB_SUFFIX;
+  std::string lib_path = clarbe_env + "/bin/" + args[0] + DLL_SUFFIX;
 
   open_dll;
 

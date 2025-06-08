@@ -2,7 +2,7 @@
 name = "clarbe"
 std = "c++26"
 build_type = "exec"
-version = "0.0.1"
+version = "0.0.2"
 
 [local]
 sources = ["src"]
@@ -17,7 +17,3 @@ run_before = ["git clone https://github.com/marzer/tomlplusplus.git",
 libs = ["stdc++exp"]
 debug_info = true
 compiler = "g++"
-
-[uses]
-macro_file = false
-build_file = false

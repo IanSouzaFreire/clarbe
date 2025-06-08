@@ -1,7 +1,7 @@
 CXX="g++"
 FLAGS="-std=c++2b -O0 -g"
 LIBS="-lstdc++exp"
-INC="-I ../include -I ../third-party/tomlplusplus"
+INC="-I ../include -I ../third-party/tomlplusplus -I $1"
 
 mkdir -p third-party
 cd third-party

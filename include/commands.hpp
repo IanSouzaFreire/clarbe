@@ -18,14 +18,10 @@ std::map<std::string, std::function<int(const args_t&)>> commands = {
                   "Software usage: \"clarbe <action> [args]?\"\n"
                   "\n"
                   "clarbe new <project-name>\n"
-                  "     | add [<creator>_<name>]\n"
-                  "     | remove [<creator>_<name>]\n"
-                  "     | config <placement> [<configuration>=<value>]\n"
                   "     | init\n"
                   "     | build\n"
                   "     | help\n"
                   "     | clean\n"
-                  "     | check\n"
                   "     | run\n"
                   "--------------------------------";
 
@@ -34,7 +30,7 @@ std::cout << help_msg << '\n';
 return 0;
 }
 }
-, {"version", CMD_FUNC{const char version[] = "0.0.1";
+, {"version", CMD_FUNC{const char version[] = "0.0.2";
 
 std::cout << version << '\n';
 return 0;

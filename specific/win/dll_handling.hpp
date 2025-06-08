@@ -2,7 +2,7 @@
 #define DLL_HANDLING_HPP
 
 #include <windows.h>
-#define LIB_SUFFIX ".dll"
+#define DLL_SUFFIX ".dll"
 
 #define open_dll                                                  \
   HMODULE dll_file = LoadLibrary(lib_path.c_str());               \

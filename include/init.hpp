@@ -31,19 +31,12 @@ void add_content_to_folder(const std::string& path) {
       << "[package]" << '\n'
       << "name = \"" << fs::path(path).stem().string() << "\"" << '\n'
       << "std = \"c99\"" << '\n'
-      << "build_type = \"executable\"" << '\n'
+      << "build_type = \"exec\"" << '\n'
       << "version = \"0.0.1\"" << '\n'
       << '\n'
-      << "[locals]" << '\n'
+      << "[local]" << '\n'
       << "sources = [\"src\"]" << '\n'
-      << "includes = [\"inc\"]" << '\n'
-      << '\n'
-      << "[uses]" << '\n'
-      << "macro_file = \"false\"" << '\n'
-      << "build_file = \"false\"" << '\n'
-      << '\n'
-      << "[dependencies]" << '\n'
-      << "stdio = \"latest\"" << '\n';
+      << "includes = [\"inc\"]" << '\n';
   config_file.flush();
   config_file.close();
 }
@@ -85,17 +78,11 @@ void create_plugin_template(const std::string& path) {
               << "version = \"0.0.1\"" << '\n'
               << '\n'
               << "[build]" << '\n'
-              << "compiler = \"clang++\"" << '\n'
+              << "compiler = \"g++\"" << '\n'
+              << '\n'
               << "[local]" << '\n'
               << "sources = [\"src\"]" << '\n'
-              << "includes = [\"inc\"]" << '\n'
-              << '\n'
-              << "[uses]" << '\n'
-              << "macro_file = \"false\"" << '\n'
-              << "build_file = \"false\"" << '\n'
-              << '\n'
-              << "[dependencies]" << '\n'
-              << "cppstd = \"latest\"" << '\n';
+              << "includes = [\"inc\"]" << '\n';
   config_file.flush();
   config_file.close();
 }

@@ -2,7 +2,7 @@
 #define DLL_HANDLING_HPP
 
 #include <dlfcn.h>
-#define LIB_SUFFIX ".so"
+#define DLL_SUFFIX ".so"
 
 #define open_dll                                                             \
   void* dll_file = dlopen(lib_path.c_str(), RTLD_LAZY);                      \
