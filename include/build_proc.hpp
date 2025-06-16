@@ -69,11 +69,11 @@ bool load_config(toml::table& local_config, toml::table& global_config) {
 
 std::string get_compiler(const toml::table& local_config,
                          const toml::table& global_config) {
-  if (local_config["build.global"]["compiler"]) {
-    return *(local_config["build.global"]["compiler"].value<std::string>());
+  if (local_config["build"]["global"]["compiler"]) {
+    return *(local_config["build"]["global"]["compiler"].value<std::string>());
 
-  } else if (global_config["build.global"]["compiler"]) {
-    return *(global_config["build.global"]["compiler"].value<std::string>());
+  } else if (global_config["build"]["global"]["compiler"]) {
+    return *(global_config["build"]["global"]["compiler"].value<std::string>());
 
   } else {
     std::cout << "No compiler provided.\n";
@@ -84,13 +84,13 @@ std::string get_compiler(const toml::table& local_config,
 
 std::string get_wasm_compiler(const toml::table& local_config,
                               const toml::table& global_config) {
-  if (local_config["build.global"]["wasm_compiler"]) {
-    return *(local_config["build.global"]["wasm_compiler"].value<std::string>());
+  if (local_config["build"]["global"]["wasm_compiler"]) {
+    return *(local_config["build"]["global"]["wasm_compiler"].value<std::string>());
 
-  } else if (global_config["build.global"]["wasm_compiler"]) {
-    return *(global_config["build.global"]["wasm_compiler"].value<std::string>());
+  } else if (global_config["build"]["global"]["wasm_compiler"]) {
+    return *(global_config["build"]["global"]["wasm_compiler"].value<std::string>());
 
-  } else if (local_config["build.local"]["wasms_dir"]) {
+  } else if (local_config["build"]["local"]["wasms_dir"]) {
     std::cout << "Wasm compilation defined but no compiler.\n";
   }
 
@@ -127,7 +127,7 @@ void build_main_project(const toml::table& local_config,
                         const Flags_t&     flags) {
   std::string main_out_objs = " ";
 
-  const auto& source_directories = *(local_config["build.local"]["sources"].as_array());
+  const auto& source_directories = *(local_config["build"]["local"]["sources"].as_array());
 
   fs::create_directories("target/object");
   fs::create_directories("target/bin");
@@ -145,8 +145,8 @@ void build_main_project(const toml::table& local_config,
     }
   }
 
-  if (flags.debug == true && local_config["profile.debug"]["sources"]) {
-    const auto& debug_src_dirs = *(local_config["profile.debug"]["sources"].as_array());
+  if (flags.debug == true && local_config["profile"]["debug"]["sources"]) {
+    const auto& debug_src_dirs = *(local_config["profile"]["debug"]["sources"].as_array());
 
     for (const auto& node : debug_src_dirs) {
       const std::string dir = node.as_string()->get();
@@ -159,8 +159,8 @@ void build_main_project(const toml::table& local_config,
         main_out_objs += "target/object/" + filename + ".o ";
       }
     }
-  } else if (flags.release == true && local_config["profile.release"]["sources"]) {
-    const auto& release_src_dirs = *(local_config["profile.release"]["sources"].as_array());
+  } else if (flags.release == true && local_config["profile"]["release"]["sources"]) {
+    const auto& release_src_dirs = *(local_config["profile"]["release"]["sources"].as_array());
 
     for (const auto& node : release_src_dirs) {
       const std::string dir = node.as_string()->get();
@@ -187,9 +187,9 @@ void build_dlls(const toml::table& local_config,
                 const std::string& used_flags,
                 const std::string& pre,
                 const Flags_t&     flags) {
-  if (local_config["build.local"]["dlls_dir"]) {
+  if (local_config["build"]["local"]["dlls_dir"]) {
     fs::create_directories("target/dlls");
-    const auto& dll_files_dir = *(local_config["build.local"]["dlls_dir"].as_array());
+    const auto& dll_files_dir = *(local_config["build"]["local"]["dlls_dir"].as_array());
 
     for (const auto& node : dll_files_dir) {
       const std::string dir = node.as_string()->get();
@@ -215,10 +215,10 @@ void build_wasm(const toml::table& local_config,
                 const std::string& includes,
                 const std::string& used_flags,
                 const Flags_t&     flags) {
-  if (local_config["build.local"]["wasms_dir"]) {
+  if (local_config["build"]["local"]["wasms_dir"]) {
     fs::create_directories("target/wasm_obj");
     const auto& wasm_files_dir =
-        *(local_config["build.local"]["wasms_dir"].as_array());
+        *(local_config["build"]["local"]["wasms_dir"].as_array());
 
     for (const auto& node : wasm_files_dir) {
       const std::string dir = node.as_string()->get();
@@ -242,8 +242,8 @@ std::string return_flags(toml::table& local_config, Flags_t& flags) {
 
   if (!flags.cmd_window) {
     ret += " -mwindows";
-  } else if (local_config["build.features"]["command_line"]) {
-    if (*(local_config["build.features"]["command_line"].value<bool>()) == false) {
+  } else if (local_config["build"]["features"]["command_line"]) {
+    if (*(local_config["build"]["features"]["command_line"].value<bool>()) == false) {
       ret += " -mwindows";
     }
   }
@@ -271,10 +271,10 @@ std::string return_flags(toml::table& local_config, Flags_t& flags) {
       const std::string profile = *(local_config["build"]["profile"].value<std::string>());
 
       if (profile == "debug") {
-        ret += " -g -DDEBUG " + local_config["profile.debug"]["add"].value_or<std::string>(" ");
+        ret += " -g -DDEBUG " + local_config["profile"]["debug"]["add"].value_or<std::string>(" ");
         flags.debug = true;
       } else if (profile == "release") {
-        ret += " -DRELEASE " + local_config["profile.debug"]["add"].value_or<std::string>(" ");
+        ret += " -DRELEASE " + local_config["profile"]["debug"]["add"].value_or<std::string>(" ");
         flags.release = true;
       }
     }
@@ -284,9 +284,9 @@ std::string return_flags(toml::table& local_config, Flags_t& flags) {
     ret += " " + local_config["build"]["extra"].as_string()->get();
   }
 
-  if (local_config["build.global"]["libraries"]) {
+  if (local_config["build"]["global"]["libraries"]) {
     const auto& lib_flags_from_toml =
-        *(local_config["build.global"]["libraries"].as_array());
+        *(local_config["build"]["global"]["libraries"].as_array());
 
     for (const auto& node : lib_flags_from_toml) {
       const std::string lib = node.as_string()->get();
@@ -345,43 +345,43 @@ std::string get_includes(toml::table& local_config,
                          Flags_t& compilation_flags) {
   std::string includes = " ";
 
-  if (local_config["build.local"]["includes"]) {
+  if (local_config["build"]["local"]["includes"]) {
     const auto& include_directories =
-        *(local_config["build.local"]["includes"].as_array());
+        *(local_config["build"]["local"]["includes"].as_array());
 
     for (const auto& node : include_directories) {
       includes += "-I " + node.as_string()->get() + " ";
     }
   }
 
-  if (local_config["build.local"]["os_includes"]) {
+  if (local_config["build"]["local"]["os_includes"]) {
     const auto& include_directories =
-        *(local_config["build.local"]["os_includes"].as_array());
+        *(local_config["build"]["local"]["os_includes"].as_array());
 
     for (const auto& node : include_directories) {
       handle_os_includes(includes, node.as_string()->get(), compilation_flags);
     }
   }
 
-  if (local_config["build.global"]["dependencies"]) {
+  if (local_config["build"]["global"]["dependencies"]) {
     const auto& include_directories =
-        *(local_config["build.global"]["dependencies"].as_array());
+        *(local_config["build"]["global"]["dependencies"].as_array());
 
     for (const auto& node : include_directories) {
       handle_os_includes(includes, node.as_string()->get(), compilation_flags);
     }
   }
 
-  if (compilation_flags.debug == true && local_config["profile.debug"]["includes"]) {
+  if (compilation_flags.debug == true && local_config["profile"]["debug"]["includes"]) {
     const auto& include_directories =
-        *(local_config["profile.debug"]["includes"].as_array());
+        *(local_config["profile"]["debug"]["includes"].as_array());
 
     for (const auto& node : include_directories) {
       includes += "-I " + node.as_string()->get() + " ";
     }
-  } else if (compilation_flags.release == true && local_config["profile.release"]["includes"]) {
+  } else if (compilation_flags.release == true && local_config["profile"]["release"]["includes"]) {
     const auto& include_directories =
-        *(local_config["profile.release"]["includes"].as_array());
+        *(local_config["profile"]["release"]["includes"].as_array());
 
     for (const auto& node : include_directories) {
       includes += "-I " + node.as_string()->get() + " ";
