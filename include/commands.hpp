@@ -5,33 +5,49 @@
 #include <functional>
 #include <iostream>
 #include <map>
+#include <sstream>
+#include <stdexcept>
 
 #include "cmd_template.hpp"
+#include "consts.hpp"
+#include "dll_handling.hpp"
 
 namespace fs = std::filesystem;
 
 #define CMD_FUNC [](const args_t& args) -> int
 
+typedef char* (*fhelp_func)();
+
 std::map<std::string, std::function<int(const args_t&)>> commands = {
-    {"help",
-     CMD_FUNC{const char help_msg[] =
-                  "Software usage: \"clarbe <action> [args]?\"\n"
-                  "\n"
-                  "clarbe new <project-name>\n"
-                  "     | init\n"
-                  "     | build\n"
-                  "     | help\n"
-                  "     | clean\n"
-                  "     | run\n"
-                  "--------------------------------";
+    {"help", CMD_FUNC{std::cout << "Available commands:\n";
+for (const auto& [name, func] : commands) {
+  std::cout << "  " << name << "\n";
+}
 
-std::cout << help_msg << '\n';
+std::string bin_path = clarbe_env + "/bin";
+for (const auto& entry : fs::directory_iterator(bin_path)) {
+  if (entry.is_regular_file() && entry.path().extension() == DLL_SUFFIX) {
+    std::string lib_path = entry.path().string();
 
+    fhelp_func fhelp = nullptr;
+
+    open_dll(fhelp_func, lib_path.c_str(), fhelp,
+             fs::path(entry).stem().string(), continue);
+
+    char* help_message = fhelp();
+    if (help_message) {
+      std::cout << "  " << help_message << "\n";
+    } else {
+      std::cerr << "fhelp returned nullptr for " << lib_path << "\n";
+    }
+
+    close_dll;
+  }
+}
 return 0;
 }
 }
 , {"version", CMD_FUNC{const char version[] = "0.0.2";
-
 std::cout << version << '\n';
 return 0;
 }

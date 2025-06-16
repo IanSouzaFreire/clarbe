@@ -7,6 +7,8 @@
 
 namespace fs = std::filesystem;
 
+HELP_FUNC() { return "run [flags] -va- <argv>"; }
+
 MAIN_FUNC(const args_t& args) {
   if (!fs::is_directory("target/bin")) {
     std::cout << "Project not built.\n";
@@ -23,7 +25,9 @@ MAIN_FUNC(const args_t& args) {
     }
   }
 
-  std::system(("target\\bin\\" + *(local_config["package"]["name"].value<std::string>()) + argv).c_str());
+  std::system(("target\\bin\\" +
+               *(local_config["package"]["name"].value<std::string>()) + argv)
+                  .c_str());
 
   return 0;
 }

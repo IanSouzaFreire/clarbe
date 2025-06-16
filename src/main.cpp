@@ -41,8 +41,9 @@ int main(int argc, char** argv) {
 
   // Load the command's library
   std::string lib_path = clarbe_env + "/bin/" + args[0] + DLL_SUFFIX;
+  CMD_func proc = nullptr;
 
-  open_dll;
+  open_dll(CMD_func, lib_path.c_str(), proc, argv[0], return 1);
 
   run_toml_before_cmd();
   int ret = proc(args);

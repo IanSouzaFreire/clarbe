@@ -8,6 +8,7 @@ obj/
 third-party/
 target/
 tomlplusplus/
+clarbe.wiki/
 
 # Includes
 tomlplusplus/

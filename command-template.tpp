@@ -1,8 +1,8 @@
-#include <print>
+#include <iostream>
 
 #include "cmd_template.hpp"
 
 MAIN_FUNC(const args_t& args) {
-  std::println("Implement here!");
+  std::cout << "Implement here!\n";
   return 0;
 }

@@ -8,6 +8,8 @@
 
 namespace fs = std::filesystem;
 
+HELP_FUNC() { return "init [plugin|null]"; }
+
 MAIN_FUNC(const args_t& args) {
   if (!fs::is_empty(fs::current_path())) {
     std::cout << "Current directory is not empty.\n";

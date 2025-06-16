@@ -7,6 +7,8 @@
 
 namespace fs = std::filesystem;
 
+HELP_FUNC() { return "new <project-name> [plugin|null]"; }
+
 MAIN_FUNC(const args_t& args) {
   if (fs::is_directory(args[2])) {
     std::cout << "Directory " << args[2] << " already exists.\n";

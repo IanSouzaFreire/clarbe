@@ -1,5 +1,7 @@
 #include "build_proc.hpp"
 
+HELP_FUNC() { return "build [flags]"; }
+
 MAIN_FUNC(const args_t& args) {
   if (args[1] == "help") {
     print_help(args);
@@ -20,7 +22,8 @@ MAIN_FUNC(const args_t& args) {
 
   std::string wasm_compiler = get_wasm_compiler(local_config, global_config);
   std::string compiler = get_compiler(local_config, global_config);
-  std::string pkg_name = *(local_config["package"]["name"].value<std::string>());
+  std::string pkg_name =
+      *(local_config["package"]["name"].value<std::string>());
   Flags_t compilation_flags;
   std::string used_flags = return_flags(local_config, compilation_flags);
   std::string includes = get_includes(local_config, compilation_flags);
@@ -40,10 +43,12 @@ MAIN_FUNC(const args_t& args) {
     }
   }
 
+  generate_include_file(local_config, global_config, includes, compilation_flags);
+
   build_main_project(local_config, compiler, std, includes, used_flags,
-                     pkg_name, pre);
-  build_dlls(local_config, compiler, std, includes, used_flags, pre);
-  build_wasm(local_config, wasm_compiler, std, includes, used_flags);
+                     pkg_name, pre, compilation_flags);
+  build_dlls(local_config, compiler, std, includes, used_flags, pre, compilation_flags);
+  build_wasm(local_config, wasm_compiler, std, includes, used_flags, compilation_flags);
 
   return 0;
 }
