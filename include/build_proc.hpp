@@ -40,6 +40,10 @@ return 0;
 return 0;
 }
 }
+, {"--release", FLAG_OP_L{flags.release = true;
+return 0;
+}
+}
 , {
   "--architecture", FLAG_OP_L {
     flags.architecture = args[place + 1];

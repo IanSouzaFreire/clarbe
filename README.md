@@ -13,6 +13,7 @@ hence the compiler is not yet functional, the project manager will be a wrapper 
 
 ## Dependencies
  - toml++
+ - curl
 
 ## Build dependencies
  - C/C++ compiler(gcc, clang, etc...)
