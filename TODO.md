@@ -13,3 +13,4 @@ Not yet:
 - add/remove libraries with command 'add'/'remove'
 - global include directory
 - support for wasm plugins
+- build and macro definition files
