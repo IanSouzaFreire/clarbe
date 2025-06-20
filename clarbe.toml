@@ -20,3 +20,9 @@ dlls_dir = ["commands"]
 [build.global]
 libraries = ["stdc++exp"]
 compiler = "g++"
+
+[profile.debug]
+add = "-O0 -Wall -Wextra"
+
+[profile.release]
+add = "-O2 -w"

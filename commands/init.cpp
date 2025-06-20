@@ -8,20 +8,20 @@
 
 namespace fs = std::filesystem;
 
-HELP_FUNC() { return "init [plugin|null]"; }
+HELP_FUNC () { return "init [plugin|null]"; }
 
-MAIN_FUNC(const args_t& args) {
-  if (!fs::is_empty(fs::current_path())) {
+MAIN_FUNC ( const args_t &args ) {
+  if ( !fs::is_empty ( fs::current_path () ) ) {
     std::cout << "Current directory is not empty.\n";
     return 0;
   }
 
-  if (args[1] == "plugin") {
-    create_plugin_template(fs::current_path().generic_string());
+  if ( args[ 1 ] == "plugin" ) {
+    create_plugin_template ( fs::current_path ().generic_string () );
     return 0;
   }
 
-  add_content_to_folder(fs::current_path().generic_string());
+  add_content_to_folder ( fs::current_path ().generic_string () );
 
   return 0;
 }
