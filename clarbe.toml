@@ -1,6 +1,6 @@
 [package]
 name = "clarbe"
-standard = "c++26"
+standard = "c++20"
 build_type = "exec"
 version = "0.0.2"
 

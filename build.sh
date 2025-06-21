@@ -36,8 +36,8 @@ echo "Building commands:"
 # Compile each command to it's own dll file
 for src in ../commands/*.cpp; do
   base=$(basename "$src" .cpp)
-  $CXX -c "$src" -o "cmd/${base}.o" $INC $LIBS $FLAGS $CFLAGS $CXXFLAGS $LDFLAGS
-  $CXX -shared -o "bin/${base}.dll" "cmd/${base}.o" $INC $LIBS $FLAGS $CFLAGS $CXXFLAGS $LDFLAGS
+  $CXX -fPIC -c "$src" -o "cmd/${base}.o" $INC $LIBS $FLAGS $CFLAGS $CXXFLAGS $LDFLAGS
+  $CXX -shared -o "bin/${base}.dll" -fPIC "cmd/${base}.o" $INC $LIBS $FLAGS $CFLAGS $CXXFLAGS $LDFLAGS
 done
 
 # Send binary directory to the clarbe binaries dir
