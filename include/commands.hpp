@@ -9,6 +9,7 @@
 #include <stdexcept>
 
 #include "cmd_template.hpp"
+#include "config_param.h"
 #include "consts.hpp"
 #include "dll_handling.hpp"
 
@@ -46,8 +47,7 @@ for ( const auto &entry : fs::directory_iterator ( bin_path ) ) {
 return 0;
 }
 }
-, { "version", CMD_FUNC{ const char version[] = "0.0.2";
-std::cout << version << '\n';
+, { "version", CMD_FUNC{ std::cout << CLARBE_LOCAL_SOFTWARE_VERSION << '\n';
 return 0;
 }
 }

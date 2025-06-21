@@ -11,8 +11,8 @@
 
 #include "cmd_template.hpp"
 #include "consts.hpp"
-#include "toml.hpp"
 #include "dll_handling.hpp"
+#include "toml.hpp"
 
 namespace fs = std::filesystem;
 
@@ -63,7 +63,7 @@ void print_help ( const args_t &args ) {
 
 bool load_config ( toml::table &local_config, toml::table &global_config ) {
   try {
-    local_config  = toml::parse_file ( "clarbe.toml" );
+    local_config = toml::parse_file ( "clarbe.toml" );
   } catch ( const toml::parse_error &err ) {
     std::cout << "Error parsing local config file:\n" << err.description () << "\n";
     return false;
@@ -73,17 +73,17 @@ bool load_config ( toml::table &local_config, toml::table &global_config ) {
     global_config = toml::parse_file ( clarbe_env + "/config.toml" );
   } catch ( const toml::parse_error &err ) {
     std::cout << "Error parsing global config file:\n" << err.description () << "\n";
-    
-    if ( fs::exists( clarbe_env + "/config.toml" ) ) {
-      std::ofstream tmp( clarbe_env + "/config.toml", std::ios::out );
-      tmp.flush();
-      tmp.close();
+
+    if ( fs::exists ( clarbe_env + "/config.toml" ) ) {
+      std::ofstream tmp ( clarbe_env + "/config.toml", std::ios::out );
+      tmp.flush ();
+      tmp.close ();
       return true;
     }
 
     return false;
   }
-  
+
   return true;
 }
 
@@ -210,10 +210,11 @@ void build_dlls ( const toml::table &local_config,
       for ( const auto &entry : fs::directory_iterator ( dir ) ) {
         const std::string path     = entry.path ().string ();
         const std::string filename = entry.path ().stem ().string ();
-        std::system ( ( compiler + " -fPIC -c " + path + " -o target/dlls/" + filename + DLL_SUFFIX + ".o " + std + includes + used_flags )
+        std::system ( ( compiler + " -fPIC -c " + path + " -o target/dlls/" + filename +
+                        DLL_SUFFIX + ".o " + std + includes + used_flags )
                       .c_str () );
-        std::system ( ( compiler + " -shared " + pre + " -o target/bin/" + filename +
-                        DLL_SUFFIX + " target/dlls/" + filename + DLL_SUFFIX + ".o " + std + includes + used_flags )
+        std::system ( ( compiler + " -shared " + pre + " -o target/bin/" + filename + DLL_SUFFIX +
+                        " target/dlls/" + filename + DLL_SUFFIX + ".o " + std + includes + used_flags )
                       .c_str () );
       }
     }
