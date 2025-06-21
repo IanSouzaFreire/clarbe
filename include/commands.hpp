@@ -9,9 +9,14 @@
 #include <stdexcept>
 
 #include "cmd_template.hpp"
-#include "config_param.h"
 #include "consts.hpp"
 #include "dll_handling.hpp"
+
+#if __has_include("config_param.h")
+  #include "config_param.h"
+#else
+  #define CLARBE_LOCAL_SOFTWARE_VERSION "tmp-build"
+#endif
 
 namespace fs = std::filesystem;
 
