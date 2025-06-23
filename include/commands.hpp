@@ -12,10 +12,10 @@
 #include "consts.hpp"
 #include "dll_handling.hpp"
 
-#if __has_include("config_param.h")
-  #include "config_param.h"
+#if __has_include( "config_param.h" )
+#include "config_param.h"
 #else
-  #define CLARBE_LOCAL_SOFTWARE_VERSION "tmp-build"
+#define CLARBE_LOCAL_SOFTWARE_VERSION "tmp-build"
 #endif
 
 namespace fs = std::filesystem;

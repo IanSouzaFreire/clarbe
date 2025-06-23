@@ -25,8 +25,13 @@ MAIN_FUNC ( const args_t &args ) {
     }
   }
 
-  std::system (
-  ( "target\\bin\\" + *( local_config[ "package" ][ "name" ].value< std::string > () ) + argv ).c_str () );
-
+  std::system ( (
+#if defined( __linux__ )
+                "./target/bin/"
+#elif defined( _WIN32 )
+                "target\\bin\\"
+#endif
+                + *( local_config[ "package" ][ "name" ].value< std::string > () ) + argv )
+                .c_str () );
   return 0;
 }
