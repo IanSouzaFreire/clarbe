@@ -1,6 +1,7 @@
 #ifndef BUILD_PROC_HPP
 #define BUILD_PROC_HPP
 
+#include <algorithm>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -8,11 +9,13 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <vector>
 
 #include "cmd_template.hpp"
 #include "consts.hpp"
 #include "dll_handling.hpp"
 #include "toml.hpp"
+#include "util.hpp"
 
 namespace fs = std::filesystem;
 
@@ -54,10 +57,30 @@ return 0;
 }
 ;
 
+
 void print_help ( const args_t &args ) {
   std::cout << "Available commands:\n";
   for ( const auto &iter : flag_op ) {
     std::cout << "\t| " << iter.first << "\n";
+  }
+}
+
+void get_ext_to_ignore ( std::vector< std::string > &vec, toml::table &local_config, toml::table &global_config ) {
+  if ( local_config[ "build" ][ "ignore" ] ) {
+    const auto &ignore_dirs = *( local_config[ "build" ][ "ignore" ].as_array () );
+
+    for ( const auto &node : ignore_dirs ) {
+      vec.push_back ( node.as_string ()->get () );
+    }
+  }
+
+  if ( global_config[ "build" ][ "ignore" ] ) {
+    const auto &ignore_dirs = *( global_config[ "build" ][ "ignore" ].as_array () );
+
+    for ( const auto &node : ignore_dirs ) {
+      if ( std::find ( vec.begin (), vec.end (), node.as_string ()->get () ) == vec.end () )
+        vec.push_back ( node.as_string ()->get () );
+    }
   }
 }
 
@@ -141,7 +164,8 @@ void build_main_project ( const toml::table &local_config,
                           const std::string &used_flags,
                           const std::string &pkg_name,
                           const std::string &pre,
-                          const Flags_t &flags ) {
+                          const Flags_t &flags,
+                          const std::vector< std::string > &ignore ) {
   std::string main_out_objs = " ";
 
   const auto &source_directories = *( local_config[ "build" ][ "local" ][ "sources" ].as_array () );
@@ -155,6 +179,10 @@ void build_main_project ( const toml::table &local_config,
     for ( const auto &entry : fs::directory_iterator ( dir ) ) {
       const std::string path     = entry.path ().string ();
       const std::string filename = entry.path ().stem ().string ();
+
+      if ( std::find ( ignore.begin (), ignore.end (), extension_of ( path ) ) != ignore.end () ) {
+        continue;
+      }
       std::system ( ( compiler + " -c " + path + " -o target/object/" + filename + ".o " + std + includes + used_flags )
                     .c_str () );
       main_out_objs += "target/object/" + filename + ".o ";
@@ -169,6 +197,11 @@ void build_main_project ( const toml::table &local_config,
       for ( const auto &entry : fs::directory_iterator ( dir ) ) {
         const std::string path     = entry.path ().string ();
         const std::string filename = entry.path ().stem ().string ();
+
+        if ( std::find ( ignore.begin (), ignore.end (), extension_of ( path ) ) != ignore.end () ) {
+          continue;
+        }
+
         std::system ( ( compiler + " -c " + path + " -o target/object/" + filename + ".o " + std + includes + used_flags )
                       .c_str () );
         main_out_objs += "target/object/" + filename + ".o ";
@@ -182,6 +215,11 @@ void build_main_project ( const toml::table &local_config,
       for ( const auto &entry : fs::directory_iterator ( dir ) ) {
         const std::string path     = entry.path ().string ();
         const std::string filename = entry.path ().stem ().string ();
+
+        if ( std::find ( ignore.begin (), ignore.end (), extension_of ( path ) ) != ignore.end () ) {
+          continue;
+        }
+
         std::system ( ( compiler + " -c " + path + " -o target/object/" + filename + ".o " + std + includes + used_flags )
                       .c_str () );
         main_out_objs += "target/object/" + filename + ".o ";
@@ -199,7 +237,8 @@ void build_dlls ( const toml::table &local_config,
                   const std::string &includes,
                   const std::string &used_flags,
                   const std::string &pre,
-                  const Flags_t &flags ) {
+                  const Flags_t &flags,
+                  const std::vector< std::string > &ignore ) {
   if ( local_config[ "build" ][ "local" ][ "dlls_dir" ] ) {
     fs::create_directories ( "target/dlls" );
     const auto &dll_files_dir = *( local_config[ "build" ][ "local" ][ "dlls_dir" ].as_array () );
@@ -210,6 +249,11 @@ void build_dlls ( const toml::table &local_config,
       for ( const auto &entry : fs::directory_iterator ( dir ) ) {
         const std::string path     = entry.path ().string ();
         const std::string filename = entry.path ().stem ().string ();
+
+        if ( std::find ( ignore.begin (), ignore.end (), extension_of ( path ) ) != ignore.end () ) {
+          continue;
+        }
+
         std::system ( ( compiler + " -fPIC -c " + path + " -o target/dlls/" + filename +
                         DLL_SUFFIX + ".o " + std + includes + used_flags )
                       .c_str () );
@@ -226,7 +270,8 @@ void build_wasm ( const toml::table &local_config,
                   const std::string &std,
                   const std::string &includes,
                   const std::string &used_flags,
-                  const Flags_t &flags ) {
+                  const Flags_t &flags,
+                  const std::vector< std::string > &ignore ) {
   if ( local_config[ "build" ][ "local" ][ "wasms_dir" ] ) {
     fs::create_directories ( "target/wasm_obj" );
     const auto &wasm_files_dir = *( local_config[ "build" ][ "local" ][ "wasms_dir" ].as_array () );
@@ -236,6 +281,11 @@ void build_wasm ( const toml::table &local_config,
       for ( const auto &entry : fs::directory_iterator ( dir ) ) {
         const std::string path     = entry.path ().string ();
         const std::string filename = entry.path ().stem ().string ();
+
+        if ( std::find ( ignore.begin (), ignore.end (), extension_of ( path ) ) != ignore.end () ) {
+          continue;
+        }
+
         std::system ( ( wasm_compiler + " " + path + " -o target/wasm_obj/" + filename +
                         ".wasm.o " + std + includes + used_flags )
                       .c_str () );

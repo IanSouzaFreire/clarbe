@@ -1,9 +1,11 @@
 #include <cstdlib>
 #include <filesystem>
 #include <iostream>
+#include <string>
 
 #include "cmd_template.hpp"
 #include "toml.hpp"
+#include "util.hpp"
 
 namespace fs = std::filesystem;
 
@@ -17,10 +19,11 @@ MAIN_FUNC ( const args_t &args ) {
 
   toml::table local_config = toml::parse_file ( "clarbe.toml" );
 
-  std::string argv = " ";
+  std::string argv    = " ";
+  const size_t va_pos = find_position_in_vec< std::string > ( args, "-va-" );
 
-  if ( args[ 1 ] == "-va-" ) {
-    for ( int i = 3; i < args.size (); i++ ) {
+  if ( va_pos < args.size () ) {
+    for ( size_t i = va_pos; i < args.size (); i++ ) {
       argv += args[ i ] + " ";
     }
   }

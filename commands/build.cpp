@@ -20,6 +20,8 @@ MAIN_FUNC ( const args_t &args ) {
     return 1;
   }
 
+  std::vector< std::string > ignore{};
+  get_ext_to_ignore ( ignore, local_config, global_config );
   std::string wasm_compiler = get_wasm_compiler ( local_config, global_config );
   std::string compiler      = get_compiler ( local_config, global_config );
   std::string pkg_name      = *( local_config[ "package" ][ "name" ].value< std::string > () );
@@ -44,9 +46,9 @@ MAIN_FUNC ( const args_t &args ) {
 
   generate_include_file ( local_config, global_config, includes, compilation_flags );
 
-  build_main_project ( local_config, compiler, std, includes, used_flags, pkg_name, pre, compilation_flags );
-  build_dlls ( local_config, compiler, std, includes, used_flags, pre, compilation_flags );
-  build_wasm ( local_config, wasm_compiler, std, includes, used_flags, compilation_flags );
+  build_main_project ( local_config, compiler, std, includes, used_flags, pkg_name, pre, compilation_flags, ignore );
+  build_dlls ( local_config, compiler, std, includes, used_flags, pre, compilation_flags, ignore );
+  build_wasm ( local_config, wasm_compiler, std, includes, used_flags, compilation_flags, ignore );
 
   return 0;
 }

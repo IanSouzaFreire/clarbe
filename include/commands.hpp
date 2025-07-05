@@ -27,7 +27,7 @@ typedef char *( *fhelp_func ) ();
 std::map< std::string, std::function< int ( const args_t & ) > > commands = {
   { "help", CMD_FUNC{ std::cout << "Available commands:\n";
 for ( const auto &[ name, func ] : commands ) {
-  std::cout << "  " << name << "\n";
+  std::cout << "\t| " << name << "\n";
 }
 
 std::string bin_path = clarbe_env + "/bin";
@@ -41,7 +41,7 @@ for ( const auto &entry : fs::directory_iterator ( bin_path ) ) {
 
     char *help_message = fhelp ();
     if ( help_message ) {
-      std::cout << "  " << help_message << "\n";
+      std::cout << "\t| " << help_message << "\n";
     } else {
       std::cerr << "fhelp returned nullptr for " << lib_path << "\n";
     }
