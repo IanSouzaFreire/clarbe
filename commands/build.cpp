@@ -46,9 +46,17 @@ MAIN_FUNC ( const args_t &args ) {
 
   generate_include_file ( local_config, global_config, includes, compilation_flags );
 
-  build_main_project ( local_config, compiler, std, includes, used_flags, pkg_name, pre, compilation_flags, ignore );
-  build_dlls ( local_config, compiler, std, includes, used_flags, pre, compilation_flags, ignore );
-  build_wasm ( local_config, wasm_compiler, std, includes, used_flags, compilation_flags, ignore );
+  if ( compilation_flags.build_main_files ) {
+    build_main_project ( local_config, compiler, std, includes, used_flags, pkg_name, pre, compilation_flags, ignore );
+  }
+
+  if ( compilation_flags.build_dlls_files ) {
+    build_dlls ( local_config, compiler, std, includes, used_flags, pre, compilation_flags, ignore );
+  }
+
+  if ( compilation_flags.build_wasm_files ) {
+    build_wasm ( local_config, wasm_compiler, std, includes, used_flags, compilation_flags, ignore );
+  }
 
   return 0;
 }

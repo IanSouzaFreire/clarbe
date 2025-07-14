@@ -8,6 +8,7 @@
 #include <functional>
 #include <iostream>
 #include <map>
+#include <stack>
 #include <string>
 #include <vector>
 
@@ -25,6 +26,9 @@ class Flags_t {
   bool cmd_window          = true;
   bool debug               = false;
   bool release             = false;
+  bool build_wasm_files    = true;
+  bool build_main_files    = true;
+  bool build_dlls_files    = true;
   int optimization         = 0;
   std::string architecture = "";
 };
@@ -32,7 +36,7 @@ class Flags_t {
 #define FLAG_OP_L []( Flags_t & flags, const int place, const args_t &args ) -> int
 
 std::map< std::string, std::function< int ( Flags_t &, const int, const args_t & ) > > flag_op = {
-  { "--no_window", FLAG_OP_L{ flags.cmd_window = false;
+  { "--no-window", FLAG_OP_L{ flags.cmd_window = false;
 return 0;
 }
 }
@@ -48,9 +52,21 @@ return 0;
 return 0;
 }
 }
+, { "--architecture", FLAG_OP_L{ flags.architecture = args[ place + 1 ];
+return 0;
+}
+}
+, { "--no-dll", FLAG_OP_L{ flags.build_dlls_files = false;
+return 0;
+}
+}
+, { "--no-wasm", FLAG_OP_L{ flags.build_wasm_files = false;
+return 0;
+}
+}
 , {
-  "--architecture", FLAG_OP_L {
-    flags.architecture = args[ place + 1 ];
+  "--no-main", FLAG_OP_L {
+    flags.build_main_files = false;
     return 0;
   }
 }
@@ -173,61 +189,60 @@ void build_main_project ( const toml::table &local_config,
   fs::create_directories ( "target/object" );
   fs::create_directories ( "target/bin" );
 
-  // compile source to .obj files
-  for ( const auto &node : source_directories ) {
-    const std::string dir = node.as_string ()->get ();
-    for ( const auto &entry : fs::directory_iterator ( dir ) ) {
-      const std::string path     = entry.path ().string ();
-      const std::string filename = entry.path ().stem ().string ();
+  std::stack< std::string > directories{};
 
-      if ( std::find ( ignore.begin (), ignore.end (), extension_of ( path ) ) != ignore.end () ) {
-        continue;
-      }
-      std::system ( ( compiler + " -c " + path + " -o target/object/" + filename + ".o " + std + includes + used_flags )
-                    .c_str () );
-      main_out_objs += "target/object/" + filename + ".o ";
-    }
+  // Push all source directories onto the stack
+  for ( const auto &node : source_directories ) {
+    directories.push ( node.as_string ()->get () );
   }
 
   if ( flags.debug == true && local_config[ "profile" ][ "debug" ][ "sources" ] ) {
     const auto &debug_src_dirs = *( local_config[ "profile" ][ "debug" ][ "sources" ].as_array () );
 
     for ( const auto &node : debug_src_dirs ) {
-      const std::string dir = node.as_string ()->get ();
-      for ( const auto &entry : fs::directory_iterator ( dir ) ) {
-        const std::string path     = entry.path ().string ();
-        const std::string filename = entry.path ().stem ().string ();
-
-        if ( std::find ( ignore.begin (), ignore.end (), extension_of ( path ) ) != ignore.end () ) {
-          continue;
-        }
-
-        std::system ( ( compiler + " -c " + path + " -o target/object/" + filename + ".o " + std + includes + used_flags )
-                      .c_str () );
-        main_out_objs += "target/object/" + filename + ".o ";
-      }
+      directories.push ( node.as_string ()->get () );
     }
   } else if ( flags.release == true && local_config[ "profile" ][ "release" ][ "sources" ] ) {
     const auto &release_src_dirs = *( local_config[ "profile" ][ "release" ][ "sources" ].as_array () );
 
     for ( const auto &node : release_src_dirs ) {
-      const std::string dir = node.as_string ()->get ();
-      for ( const auto &entry : fs::directory_iterator ( dir ) ) {
-        const std::string path     = entry.path ().string ();
-        const std::string filename = entry.path ().stem ().string ();
+      directories.push ( node.as_string ()->get () );
+    }
+  }
 
-        if ( std::find ( ignore.begin (), ignore.end (), extension_of ( path ) ) != ignore.end () ) {
-          continue;
-        }
+  // push all directories inside or compile to object
+  while ( !directories.empty () ) {
+    const std::string dir = directories.top ();
+    directories.pop ();
 
-        std::system ( ( compiler + " -c " + path + " -o target/object/" + filename + ".o " + std + includes + used_flags )
+    for ( const auto &entry : fs::directory_iterator ( dir ) ) {
+      const std::string path     = entry.path ().string ();
+      const std::string filename = entry.path ().stem ().string ();
+
+      // Check if the file extension is in the ignore list
+      if ( std::find ( ignore.begin (), ignore.end (), extension_of ( path ) ) != ignore.end () ) {
+        continue;
+      }
+
+      // If it's a directory, add to stack
+      if ( fs::is_directory ( entry.status () ) ) {
+        directories.push ( path );
+      } else {
+        std::system ( ( compiler + " -c " + path + " -o target/object/" + filename + "." +
+                        path[ 0 ] + ".o " + std + includes + used_flags )
                       .c_str () );
-        main_out_objs += "target/object/" + filename + ".o ";
+        main_out_objs += "target/object/" + filename + "." + path[ 0 ] + ".o ";
       }
     }
   }
 
-  std::system ( ( compiler + " " + pre + " -o target/bin/" + pkg_name + main_out_objs + std + " " + includes + used_flags )
+  std::string out_file_name = pkg_name;
+
+  if (local_config["build"]["output_name"]) {
+    out_file_name = *(local_config["build"]["output_name"].value< std::string > () );
+  }
+
+  std::system ( ( compiler + " " + pre + " -o target/bin/" + out_file_name + main_out_objs + std + " " + includes + used_flags )
                 .c_str () );
 }
 

@@ -2,7 +2,7 @@
 name = "clarbe"
 standard = "c++20"
 build_type = "exec"
-version = "0.0.2"
+version = "0.0.3"
 
 [build]
 run_before = ["git clone https://github.com/marzer/tomlplusplus.git",
