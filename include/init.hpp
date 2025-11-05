@@ -1,5 +1,4 @@
-#ifndef INIT_HPP
-#define INIT_HPP
+#pragma once
 
 #include <filesystem>
 #include <fstream>
@@ -52,7 +51,7 @@ void create_plugin_template ( const std::string &path ) {
               << "#include <iostream>" << '\n'
               << '\n'
               << "MAIN_FUNC(const args_t& args) {" << '\n'
-              << "  std::cout << \"Your plugin goes here!\\n\";" << '\n'
+              << "  std::cout << (\"Your plugin goes here!\\n\");" << '\n'
               << "  return 0;" << '\n'
               << "}" << '\n';
   source_file.flush ();
@@ -88,5 +87,3 @@ void create_plugin_template ( const std::string &path ) {
   config_file.flush ();
   config_file.close ();
 }
-
-#endif

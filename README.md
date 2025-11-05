@@ -16,7 +16,7 @@ Is a compiler wrapper / cargo-like package and project manager for the C and C++
 ## Installation
  - Create a environment variable 'CLARBE_HOME' and add 'CLARBE_HOME/bin' to path
  - Download the zipped executable and DLLs, place the contents in 'CLARBE_HOME/bin'
- > if you're compiling with ```build.sh``` please note that you need to define the included OS specific manually
+ > if you're compiling with ```build.sh``` please note that you need to define the included OS specific manually as "../specific/OS"
  - now run in terminal ```clarbe version```
 
 ## Usage

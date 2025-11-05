@@ -1,34 +1,41 @@
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <string>
 #include <vector>
+#include <toml++/toml.hpp>
+#define SPDLOG_EOL ""
+#include <spdlog/spdlog.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
 
 #include "commands.hpp"
 #include "consts.hpp"
-#include "dll_handling.hpp"
-#include "toml.hpp"
-
-typedef int ( *CMD_func ) ( const std::vector< std::string > & );
+#include "util.hpp"
 
 void run_toml_before_cmd ();
 void run_toml_after_cmd ();
 
 int main ( int argc, char **argv ) {
+  spdlog::set_pattern("%v");
+
   if ( clarbe_env == "null" ) {
-    std::cout << "Environment variable 'CLARBE_HOME' not defined.\n";
+    spdlog::info("Environment variable 'CLARBE_HOME' not defined.\n");
     return 1;
   }
-
-  std::vector< std::string > args;
 
   if ( argc < 2 ) {
-    std::cout << "No arguments provided, try 'help'.\n";
+    spdlog::info("No arguments provided, try 'help'.\n");
     return 1;
   }
 
-  // Starts at 1 to skip executable's path
-  for ( int i = 1; i < argc; i++ ) {
-    args.push_back ( std::string ( argv[ i ] ) );
+  auto args = char_arr_to_vector(argv, 1);
+
+  if ( find_position_in_vec<std::string>(args, "--trace" ) != args.size() ) {
+    spdlog::set_level(spdlog::level::trace);
+  } else if ( find_position_in_vec<std::string>(args, "--verbose" ) != args.size() ) {
+    spdlog::set_level(spdlog::level::debug);
+  } else if ( find_position_in_vec<std::string>(args, "--silent" ) != args.size() ) {
+    spdlog::set_level(spdlog::level::off);
   }
 
   // Check if it's a basic command
@@ -39,17 +46,12 @@ int main ( int argc, char **argv ) {
     return ret;
   }
 
-  // Load the command's library
-  std::string lib_path = clarbe_env + "/bin/" + args[ 0 ] + DLL_SUFFIX;
-  CMD_func proc        = nullptr;
-
-  open_dll ( CMD_func, lib_path.c_str (), proc, args[ 0 ], return 1 );
+  const std::string lib_path = clarbe_env + "/bin/" + args[ 0 ] + ".zip";
+  auto addon = AddonFile(lib_path);
 
   run_toml_before_cmd ();
-  int ret = proc ( args );
+  int ret = addon.execute<int, char**>("proc", argv);
   run_toml_after_cmd ();
-
-  close_dll;
 
   return ret;
 }

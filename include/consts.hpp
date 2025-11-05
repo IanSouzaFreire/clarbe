@@ -1,5 +1,4 @@
-#ifndef CONSTS_HPP
-#define CONSTS_HPP
+#pragma once
 
 #include <string>
 
@@ -14,6 +13,4 @@ const std::string temp_env ( getenv_or ( "TEMP", getenv_or ( "TMP", "null" ) ) )
 const std::string user_env ( getenv_or ( "HOME", "null" ) );
 #elif defined( _WIN32 )
 const std::string user_env ( getenv_or ( "USERPROFILE", "null" ) );
-#endif
-
 #endif

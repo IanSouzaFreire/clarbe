@@ -1,5 +1,4 @@
-#ifndef CMD_TEMPLATE_HPP
-#define CMD_TEMPLATE_HPP
+#pragma once
 
 #include <string>
 #include <vector>
@@ -10,10 +9,6 @@
 #define EXPORT_FN extern "C" __declspec ( dllexport )
 #endif
 
-#define HELP_FUNC EXPORT_FN char *fhelp // add support for custom help messages later
+#define DEFINE_HELP_MESSAGE(msg) EXPORT_FN const char *fhelp(){ return(msg); }
 
-#define MAIN_FUNC EXPORT_FN int proc
-
-typedef std::vector< std::string > args_t;
-
-#endif
+#define MAIN_FUNC(args) EXPORT_FN int proc ( char** args )

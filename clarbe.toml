@@ -1,28 +1,24 @@
 [package]
 name = "clarbe"
-standard = "c++20"
+standard = "c++23"
 build_type = "exec"
-version = "0.0.3"
+version = "0.0.4"
 
 [build]
-run_before = ["git clone https://github.com/marzer/tomlplusplus.git",
-              "git -C tomlplusplus pull https://github.com/marzer/tomlplusplus.git",
-              "git clone https://github.com/curl/curl.git",
-              "git -C curl pull https://github.com/curl/curl.git"]
-# run_after = ["cp -a \"target/bin\" \"%CLARBE_HOME%/\""]
+build_dr = true
+extra = "-pthread"
 
 [build.local]
 sources = ["src"]
-includes = ["include", "tomlplusplus", "curl/include/curl"]
-os_includes = ["specific"]
+includes = ["include"]
 dlls_dir = ["commands"]
 
 [build.global]
-libraries = ["stdc++exp"]
-compiler = "g++"
+compiler = "D:/msys64/mingw64/bin/g++.exe"
+libraries = ["zip", "spdlog", "fmt", "tomlplusplus", "boost_filesystem-mt"]
 
 [profile.debug]
-add = "-O0 -Wall -Wextra"
+add = "-O0 -g3 -Wall -Wextra"
 
 [profile.release]
-add = "-O2 -w"
+add = "-Ofast -g0 -w -s -fexpensive-optimizations -fno-stack-protector -fno-stack-clash-protection -fdelete-null-pointer-checks -fno-profile-arcs -fno-test-coverage"

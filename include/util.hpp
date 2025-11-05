@@ -1,8 +1,8 @@
-#ifndef UTIL_HPP
-#define UTIL_HPP
+#pragma once
 
 #include <algorithm>
 #include <vector>
+#include <string>
 
 template < class T, class Vec_t = std::vector< T > >
 size_t find_position_in_vec ( const Vec_t &vec, const T &val ) {
@@ -18,8 +18,22 @@ size_t find_position_in_vec ( const Vec_t &vec, const T &val ) {
   return index;
 }
 
-std::string extension_of ( const std::string &path ) {
-  return path.substr ( path.find_last_of ( "." ) + 1 );
+std::vector< std::string > char_arr_to_vector( char** arr, const size_t& start = 0 ) {
+  std::vector< std::string > result;
+    
+  for (size_t i{ start }; arr[ i ] != nullptr; i++) {
+    result.emplace_back( arr[ i ] );
+  }
+    
+  return result;
 }
 
-#endif
+std::string extension_of ( const std::string &path ) {
+  const auto dot_pos = path.find_last_of ( "." );
+
+  if (dot_pos == std::string::npos) {
+    return ""; // not found
+  }
+
+  return path.substr ( dot_pos + 1 );
+}

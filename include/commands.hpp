@@ -1,5 +1,4 @@
-#ifndef COMMANDS_HPP
-#define COMMANDS_HPP
+#pragma once
 
 #include <filesystem>
 #include <functional>
@@ -10,7 +9,7 @@
 
 #include "cmd_template.hpp"
 #include "consts.hpp"
-#include "dll_handling.hpp"
+#include "addons.hpp"
 
 #if __has_include( "config_param.h" )
 #include "config_param.h"
@@ -20,49 +19,43 @@
 
 namespace fs = std::filesystem;
 
-#define CMD_FUNC []( const args_t &args ) -> int
+#define CMD_FUNC []( const std::vector<std::string>& args ) -> int
 
-typedef char *( *fhelp_func ) ();
-
-std::map< std::string, std::function< int ( const args_t & ) > > commands = {
-  { "help", CMD_FUNC{ std::cout << "Available commands:\n";
-for ( const auto &[ name, func ] : commands ) {
-  std::cout << "\t| " << name << "\n";
-}
-
-std::string bin_path = clarbe_env + "/bin";
-for ( const auto &entry : fs::directory_iterator ( bin_path ) ) {
-  if ( entry.is_regular_file () && entry.path ().extension () == DLL_SUFFIX ) {
-    std::string lib_path = entry.path ().string ();
-
-    fhelp_func fhelp = nullptr;
-
-    open_dll ( fhelp_func, lib_path.c_str (), fhelp, fs::path ( entry ).stem ().string (), continue );
-
-    char *help_message = fhelp ();
-    if ( help_message ) {
-      std::cout << "\t| " << help_message << "\n";
-    } else {
-      std::cerr << "fhelp returned nullptr for " << lib_path << "\n";
+std::map< std::string, std::function< int ( const std::vector<std::string>& ) > > commands = {
+  {"help", CMD_FUNC {
+    spdlog::info("Available commands:\n");
+    for ( const auto &[ name, func ] : commands ) {
+      spdlog::info("\t| {}\n", name);
     }
 
-    close_dll;
-  }
-}
-return 0;
-}
-}
-, { "version", CMD_FUNC{ std::cout << CLARBE_LOCAL_SOFTWARE_VERSION << '\n';
-return 0;
-}
-}
-, {
+    std::string bin_path = clarbe_env + "/bin";
+    spdlog::debug("binary files location: \"{}\"\n", bin_path);
+    for ( const auto &entry : fs::directory_iterator ( bin_path ) ) {
+      if ( entry.is_regular_file () && entry.path ().extension () == ".zip" ) {
+        const auto path = entry.path ().string ();
+
+        try {
+          AddonFile addon(path);
+          
+          const auto ret =  std::string(addon.execute<const char*>("fhelp"));
+          if (ret == "NONE") continue;
+
+          spdlog::info("\t| {}\n", ret);
+          
+        } catch (const std::exception& e) {
+          spdlog::error("Exception: {}", e.what());
+          return 1;
+        }
+      }
+    }
+    return 0;
+  }}, {
+  "version", CMD_FUNC {
+    spdlog::info("{}\n", CLARBE_LOCAL_SOFTWARE_VERSION);
+    return 0;
+  }}, {
   "clean", CMD_FUNC {
     fs::remove_all ( args[ 1 ] );
     return 0;
   }
-}
-}
-;
-
-#endif
+}};
